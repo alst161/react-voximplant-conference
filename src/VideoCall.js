@@ -13,8 +13,8 @@ class VideoCall extends Component{
         this.voxAPI.on(VoxImplant.Events.ConnectionFailed, (e) => this.voxConnectionFailed(e));
         this.voxAPI.on(VoxImplant.Events.ConnectionClosed, (e) => this.voxConnectionClosed(e));
         this.voxAPI.on(VoxImplant.Events.AuthResult, (e) => this.voxAuthEvent(e));
-        this.voxAPI.on(VoxImplant.Events.MicAccessResult, (e) => this.voxMicAccessResult(e));
-        /*this.voxAPI.on(VoxImplant.Events.IncomingCall, (e) => this.voxIncomingCall(e));*/
+        /*this.voxAPI.on(VoxImplant.Events.MicAccessResult, (e) => this.voxMicAccessResult(e));
+        this.voxAPI.on(VoxImplant.Events.IncomingCall, (e) => this.voxIncomingCall(e));*/
 
 
     }
@@ -48,26 +48,22 @@ class VideoCall extends Component{
 
     voxConnectionEstablished(event) {
         console.log("VoxImplant connected");
-        this.setState({  msg: "Авторизация..." });
-        this.voxAPI.requestOneTimeLoginKey(this.props.login+"@test.arizukiii.voximplant.com");
+        console.log(this.props.login)
+        this.voxAPI.requestOneTimeLoginKey(this.props.login+"@conference.arizukiii.voximplant.com");
     }
 
     voxConnectionFailed(e) {
         console.log("Connectioned failed");
         console.log(e)
-        this.setState({
-            msg: "Соединение не может быть установлено"
-        });
     }
 
     voxConnectionClosed(event) {
         console.log("Connectioned closed");
-        this.setState({
-            msg: "Соединение было закрыто"
-        });
     }
 
     voxAuthEvent(event) {
+        console.log(`[WebSDk] Auth: ${event.displayName}`);
+        console.log(event);
         if (event.result) {
             this.displayName = event.displayName;
             this.startCall()
@@ -77,14 +73,13 @@ class VideoCall extends Component{
                 const appName = 'conference';
                 const account = 'arizukiii';
                 const login = this.props.login;
+                console.log(`[WebSDk] Login: ${login}`);
                 const URI = `${login}@${appName}.${account}.voximplant.com`;
                 const token = md5(`${event.key}|${md5(`${login}:voximplant.com:${mypass}`)}`);
                 VoxImplant.getInstance().loginWithOneTimeKey(URI, token);
                 console.log("302")
             } else {
-                this.setState({
-                    msg: "Ошибка авторизации"
-                });
+                console.log(`[WebSDk] Auth err: ${event.code}`);
             }
         }
 

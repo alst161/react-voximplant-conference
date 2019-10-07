@@ -10,8 +10,8 @@ function App() {
       <a href="/spec">Спец</a>
       <BrowserRouter>
         <Switch>
-          <Route path="/client" component={VideoCall} login="client" caller="spec"/>
-          <Route path="/Spec" component={VideoCall} login="spec" caller="client"/>
+          <Route path="/client" component={() => <VideoCall login="client" caller="spec" />}/>
+          <Route path="/spec" component={() => <VideoCall login="spec" caller="client" />}/>
         </Switch>
       </BrowserRouter>
     </div>
