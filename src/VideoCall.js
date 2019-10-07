@@ -70,7 +70,7 @@ class VideoCall extends Component{
     voxAuthEvent(event) {
         if (event.result) {
             this.displayName = event.displayName;
-            this.call = this.voxAPI.callConference({number: this.props.calledr, video: {sendVideo: true, receiveVideo: true}})
+            this.startCall()
         } else {
             if (event.code === 302) {
                 const mypass = 'SECUREPASSWORD';
@@ -88,6 +88,51 @@ class VideoCall extends Component{
             }
         }
 
+    }
+
+    startCall(){
+        this.call = this.voxAPI.callConference({number: 100, video: {sendVideo: true, receiveVideo: true}})
+        this.call.on(VoxImplant.CallEvents.Connected, this.onCallConnected);
+        this.call.on(VoxImplant.CallEvents.Disconnected, this.onCallDisconnected);
+        this.call.on(VoxImplant.CallEvents.Failed, this.onCallFailed);
+        this.call.on(VoxImplant.CallEvents.EndpointAdded, this.onEndpointAdded);
+
+    }
+    onCallConnected(e) {
+        console.log(`[WebSDk] Call connected ID: ${e.call.id()}`);
+    }
+
+    onCallDisconnected(e) {
+        console.log(`[WebSDk] Call ended ID: ${e.call.id()}`);
+        this.call = null;
+    }
+
+    onCallFailed(e) {
+        console.log(`[WebSDk] Call failed ID: ${e.call.id()}`);
+        this.call = null;
+    }
+
+    onEndpointAdded(e) {
+        console.log(`[WebSDk] New endpoint ID: ${e.endpoint.id} (${e.endpoint.isDefault?'default':'regular'}) for Call ID: ${e.call.id()}`);
+        //Remove the display element with this endpoint
+        e.endpoint.on(VoxImplant.EndpointEvents.Removed, this.onEndpointRemoved);
+        e.endpoint.on(VoxImplant.EndpointEvents.RemoteMediaAdded, this.onRemoteMediaAdded);
+        e.endpoint.on(VoxImplant.EndpointEvents.RemoteMediaRemoved, this.onRemoteMediaRemoved);
+    }
+    onEndpointRemoved(e) {
+        console.log(`[WebSDk] Endpoint was removed ID: ${e.endpoint.id} (${e.endpoint.isDefault?'default':'regular'}) for Call ID: ${e.call.id()}`);
+    }
+
+    onRemoteMediaAdded(e) {
+        console.log(`[WebSDk] New MediaRenderer ID: ${e.mediaRenderer.id} in ${e.endpoint.id} for Call ID: ${e.call.id()}`);
+        const endpointNode = document.getElementById("call_remotevideo");
+        if(endpointNode){
+            e.mediaRenderer.render(endpointNode);
+        }
+    }
+
+    onRemoteMediaRemoved(e) {
+        console.log(`[WebSDk] MediaRenderer was removed ID: ${e.mediaRenderer.id} in ${e.endpoint.id} for Call ID: ${e.call.id()}`);
     }
 
     componentDidMount() {
